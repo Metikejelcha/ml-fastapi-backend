@@ -30,6 +30,7 @@ def load_models():
     dt_model = joblib.load("models/decision_tree_model.joblib")
     lr_model = joblib.load("models/logistic_regression_model.joblib")
     feature_names = joblib.load("models/feature_names.joblib")
+    print("Loaded feature_names:", feature_names, "len =", len(feature_names))
 
 @app.on_event("startup")
 async def startup_event():
