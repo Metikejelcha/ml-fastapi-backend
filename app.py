@@ -5,6 +5,7 @@ import joblib
 import numpy as np
 import os
 import uvicorn
+import pandas as pd  # <-- add this
 
 app = FastAPI(title="Bank Marketing ML API")
 
@@ -48,7 +49,10 @@ async def predict(req: PredictRequest):
         raise HTTPException(status_code=500, detail="Models not loaded yet")
 
     if req.model_type not in ["decision_tree", "logistic_regression"]:
-        raise HTTPException(status_code=400, detail="model_type must be 'decision_tree' or 'logistic_regression'")
+        raise HTTPException(
+            status_code=400,
+            detail="model_type must be 'decision_tree' or 'logistic_regression'",
+        )
 
     if len(req.features) != len(feature_names):
         raise HTTPException(
@@ -56,7 +60,8 @@ async def predict(req: PredictRequest):
             detail=f"Expected {len(feature_names)} features, got {len(req.features)}",
         )
 
-    x = np.array(req.features).reshape(1, -1)
+    # Build a DataFrame with correct column names
+    x_df = pd.DataFrame([req.features], columns=feature_names)
 
     if req.model_type == "decision_tree":
         model = dt_model
@@ -65,8 +70,8 @@ async def predict(req: PredictRequest):
         model = lr_model
         model_name = "Logistic Regression"
 
-    pred = model.predict(x)[0]
-    proba = model.predict_proba(x)[0]
+    proba = model.predict_proba(x_df)[0]
+    pred = model.predict(x_df)[0]
 
     return {
         "model": model_name,
